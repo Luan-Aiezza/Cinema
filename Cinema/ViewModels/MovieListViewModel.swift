@@ -14,14 +14,18 @@ final class MovieListViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String? = nil
     
-    private let service = MovieService()
+    private let repository: MovieRepositoryProtocol
+    
+    init(repository: MovieRepositoryProtocol = MovieRepository()) {
+        self.repository = repository
+    }
     
     func loadMovies() async {
         isLoading = true
         errorMessage = nil
         
         do {
-            movies = try await service.fetchPopularMovies()
+            movies = try await repository.getPopularMovies()
         } catch {
             errorMessage = "Não foi possível carregar os filmes."
             print(error)
@@ -30,3 +34,4 @@ final class MovieListViewModel: ObservableObject {
         isLoading = false
     }
 }
+

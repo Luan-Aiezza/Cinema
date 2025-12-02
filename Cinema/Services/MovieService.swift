@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class MovieService {
+final class MovieService: MovieServiceProtocol {
     private let apiKey = "a3182a0920e23fd86b766ccf9ca710cd"
     
     func fetchPopularMovies() async throws -> [Movie] {
