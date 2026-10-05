@@ -1,100 +1,68 @@
 # Cinema
 
-Cinema is an iOS application built with **SwiftUI**, **MVVM architecture**, and **async/await networking**.  
-It consumes the RESTful API from *The Movie Database (TMDB)* to display popular movies, detail pages, and cached images.
-
-This project was created as a learning and portfolio piece to demonstrate REST API consumption, clean architecture, and performance-focused image caching.
-
----
+Cinema is an iOS app built with SwiftUI and MVVM that consumes The Movie Database (TMDB) REST API to list popular movies (in Brazilian Portuguese) and show a detail screen for each one. Posters are loaded through a custom in-memory image cache. It started as a learning and portfolio project on REST consumption, layered architecture and image caching.
 
 ## Features
 
-- Fetch popular movies using a RESTful API  
-- SwiftUI interface built with MVVM  
-- Async network calls using `URLSession` + `async/await`  
-- Custom **in-memory image cache** using `NSCache`  
-- Reusable `CachedAsyncImage` view (similar to Apple’s AsyncImage, but with caching)  
-- Navigation using `NavigationStack`  
-- Loading and error states  
-- Reusable, modular structure
+- Popular movies list fetched from the TMDB `movie/popular` endpoint (`language=pt-BR`)
+- Movie detail screen with poster, title, overview and average rating
+- Networking with `URLSession` and `async/await`
+- Custom in-memory image cache (`NSCache`) and a reusable `CachedAsyncImage` view
+- Loading state, error message and "try again" button on the list screen
+- Navigation with `NavigationStack`
+- Repository pattern with protocols (`MovieRepositoryProtocol`, `MovieServiceProtocol`) injected into the view model
 
----
+## Architecture
 
-## Project Structure
+The data flow is **View → ViewModel → Repository → Service → TMDB API**.
 
-Cinema/
-│
-├── Models/
-│ ├── Movie.swift
-│ └── MovieResponse.swift
-│
-├── Services/
-│ ├── MovieService.swift
-│ ├── ImageCache.swift
-│ └── ImageLoader.swift
-│
-├── ViewModels/
-│ ├── MovieListViewModel.swift
-│ └── MovieDetailViewModel.swift
-│
-├── Views/
-│ ├── MovieListView.swift
-│ ├── MovieRowView.swift
-│ ├── MovieDetailView.swift
-│ └── CachedAsyncImage.swift
-│
-└── CinemaApp.swift
-└── ContentView.swift
+| Folder | Contents |
+| --- | --- |
+| `Cinema/Models` | `Movie`, `MovieResponse` (Codable) and `MovieRepository` |
+| `Cinema/Protocol` | `MovieRepositoryProtocol`, `MovieServiceProtocol` |
+| `Cinema/Services` | `MovieService` (API calls), `ImageLoader`, `ImageCache` |
+| `Cinema/ViewModels` | `MovieListViewModel`, `MovieDetailViewModel` |
+| `Cinema/Views` | `MovieListView`, `MovieRowView`, `MovieDetailView`, `CachedAsyncImage` |
+| `Cinema/CinemaApp.swift` | App entry point (starts at `MovieListView`) |
 
-The project follows a clean MVVM approach:  
-**Model → Service → ViewModel → View**
+`ContentView.swift` is the unused Xcode template file.
 
----
+### Image caching
 
-## Setup
+`ImageLoader` checks `ImageCache` (an `NSCache<NSString, UIImage>` keyed by URL) before downloading, and stores the result afterwards. `CachedAsyncImage` uses it, so revisiting a poster in the same session does not trigger a new request. The cache is memory only, with no disk persistence.
 
-1. Get an API key from TMDB:  
-   https://www.themoviedb.org/
+## Tech stack
 
-2. Open `MovieService.swift`
+![Swift](https://img.shields.io/badge/Swift-F05138?style=for-the-badge&logo=swift&logoColor=white)
+![SwiftUI](https://img.shields.io/badge/SwiftUI-0D96F6?style=for-the-badge&logo=swift&logoColor=white)
+![Xcode](https://img.shields.io/badge/Xcode-147EFB?style=for-the-badge&logo=xcode&logoColor=white)
+![TMDB](https://img.shields.io/badge/TMDB-01B4E4?style=for-the-badge&logo=themoviedatabase&logoColor=white)
 
-3. Replace:
+Also used: Combine (`ObservableObject` / `@Published`), Swift Concurrency, `URLSession`, `NSCache`, `Codable`.
 
-```swift
-private let apiKey = "YOUR_API_KEY_HERE"
-Run the project on iOS 17+
-How Image Caching Works
-The app includes a custom implementation of image caching:
-NSCache stores downloaded images in memory
-ImageLoader checks the cache before downloading
-CachedAsyncImage loads the image once and reuses it in any view
-Returning to a previous view no longer triggers new HTTP requests
-This improves performance and makes the UI feel instantly responsive.
-Technologies Used
-SwiftUI
-Swift Concurrency (async/await)
-URLSession
-MVVM Architecture
-NSCache (Image caching)
-NavigationStack
-Codable
-Screenshots (optional)
-(Add your screenshots here)
-Example:
+## Running the project
 
-Screenshots/
-│── movie-list.png
-│── movie-details.png
-Possible Future Improvements
-Disk cache for images
-Pagination / infinite scrolling
-Unit tests for service layer
-Search screen
-Favorites using CoreData
-Skeleton loading placeholders
-iPadOS layout improvements
-Author
-Developed by Luan Aiezza
-Feel free to reach out!
-GitHub: [https://github.com/Luan-Aiezza](https://github.com/Luan-Aiezza)
-LinkedIn: [https://linkedin.com/in/luan-aiezza](https://www.linkedin.com/in/luan-aiezza/)
+Requirements: a Mac with a recent Xcode. The project sets `IPHONEOS_DEPLOYMENT_TARGET = 26.0`, Swift 5 and bundle identifier `Aiezza.Cinema`.
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Luan-Aiezza/Cinema.git
+   cd Cinema
+   ```
+2. Create a free TMDB API key at https://www.themoviedb.org/ (optional, see the note below).
+3. Open `Cinema/Services/MovieService.swift` and set your key in `apiKey`.
+4. Open `Cinema.xcodeproj` in Xcode.
+5. Select an iPhone or iPad simulator and press Run (Cmd+R).
+
+Note: the repository currently has an API key hardcoded in `MovieService.swift`. Replace it with your own and avoid committing keys.
+
+## Possible improvements
+
+- Disk cache for images
+- Pagination
+- Unit tests (none exist yet)
+- Search and favorites
+
+## Author
+
+Developed by [Luan Aiezza](https://github.com/Luan-Aiezza).
